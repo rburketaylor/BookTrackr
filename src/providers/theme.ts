@@ -33,6 +33,10 @@ function inferInitialTheme(): ThemeVariant {
 function applyDocumentTheme(theme: ThemeVariant) {
   if (typeof document !== 'undefined') {
     document.documentElement.dataset.theme = theme
+    const body = document.body
+    if (body) {
+      body.dataset.theme = theme
+    }
   }
 }
 

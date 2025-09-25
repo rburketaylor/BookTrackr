@@ -136,13 +136,29 @@ function handleSubmit(payload: { title: string; author: string; description: str
       </div>
     </section>
 
-    <aside v-if="isFormOpen" class="library-sheet">
-      <header class="library-sheet__header">
-        <h2>{{ editingBook ? 'Edit Book' : 'Add Book' }}</h2>
-        <button type="button" class="btn btn--ghost" @click="closeForm">Close</button>
-      </header>
-      <BookForm :initial-book="editingBook" @submit="handleSubmit" @cancel="closeForm" />
-    </aside>
+    <Teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="isFormOpen"
+          class="library-modal-backdrop"
+          role="presentation"
+          @click.self="closeForm"
+        >
+          <section
+            class="library-modal"
+            role="dialog"
+            :aria-label="editingBook ? 'Edit Book' : 'Add Book'"
+            aria-modal="true"
+          >
+            <header class="library-modal__header">
+              <h2 class="library-modal__title">{{ editingBook ? 'Edit Book' : 'Add Book' }}</h2>
+              <button type="button" class="btn btn--ghost" @click="closeForm">Close</button>
+            </header>
+            <BookForm :initial-book="editingBook" @submit="handleSubmit" @cancel="closeForm" />
+          </section>
+        </div>
+      </transition>
+    </Teleport>
   </PrivateLayout>
 </template>
 
@@ -205,20 +221,49 @@ function handleSubmit(payload: { title: string; author: string; description: str
   gap: 1.25rem;
 }
 
-.library-sheet {
-  margin-top: 2rem;
-  padding: 2rem;
-  border-radius: 1.25rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 30px 70px -60px rgba(15, 23, 42, 0.45);
+.library-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(1.5rem, 4vw, 4rem) 1.5rem;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  z-index: 1000;
+  overflow-y: auto;
 }
 
-.library-sheet__header {
+.library-modal {
+  width: min(720px, 100%);
+  margin-top: clamp(2rem, 10vh, 4rem);
+  padding: clamp(1.5rem, 2.5vw, 2.25rem);
+  border-radius: 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 30px 80px -40px rgba(15, 23, 42, 0.45);
+}
+
+.library-modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.library-modal__title {
+  margin: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 </style>
