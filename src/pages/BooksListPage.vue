@@ -197,23 +197,53 @@ function handleSubmit(payload: { title: string; author: string; description: str
 
 .library__filters {
   display: inline-flex;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  border-radius: 0.85rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 16px 40px -26px rgba(15, 23, 42, 0.45);
 }
 
 .filter-chip {
-  padding: 0.45rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
+  padding: 0.4rem 1.05rem;
+  border-radius: 0.7rem;
+  border: none;
   background: transparent;
+  color: var(--color-muted);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-chip:hover {
+  background: var(--color-surface);
+}
+
+.filter-chip:focus-visible {
+  outline: 3px solid rgba(68, 100, 219, 0.35);
+  outline-offset: 2px;
 }
 
 .filter-chip--active {
   background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
+  color: var(--color-app-bg);
+  box-shadow: 0 8px 20px -10px rgba(68, 100, 219, 0.45);
+}
+
+[data-theme='dark'] .library__filters {
+  background: rgba(30, 41, 59, 0.92);
+  border-color: rgba(148, 163, 184, 0.45);
+  box-shadow: 0 28px 58px -32px rgba(2, 6, 23, 0.85);
+}
+
+[data-theme='dark'] .filter-chip:hover {
+  background: rgba(148, 163, 184, 0.16);
+}
+
+[data-theme='dark'] .filter-chip--active {
+  color: var(--color-app-bg);
+  box-shadow: 0 16px 32px -18px rgba(2, 6, 23, 0.7);
 }
 
 .library__grid {
