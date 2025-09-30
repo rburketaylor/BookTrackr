@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import PublicLayout from '@/layouts/PublicLayout.vue'
@@ -34,11 +34,16 @@ const showRedirectNotice = computed(() => typeof route.query.redirect === 'strin
 
 const MAX_INPUT_LENGTH = 60
 
-watchEffect(() => {
-  if (isAuthenticated.value && router.currentRoute.value.path === '/login') {
-    router.replace(redirectTarget.value)
-  }
-})
+// Watch authentication state and redirect when authenticated
+watch(
+  isAuthenticated,
+  (authenticated) => {
+    if (authenticated && route.path === '/login') {
+      router.replace(redirectTarget.value)
+    }
+  },
+  { immediate: true }
+)
 
 watch(
   () => error.value,

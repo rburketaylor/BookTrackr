@@ -11,10 +11,40 @@ const MOCK_USER: Readonly<User> = Object.freeze({
 })
 
 const NETWORK_DELAY_MS = 600
+const STORAGE_KEY = 'booktrackr-auth'
+
+function loadPersistedUser(): User | null {
+  try {
+    const stored = globalThis.localStorage?.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Validate the structure
+      if (parsed && typeof parsed.id === 'string' && typeof parsed.username === 'string') {
+        return parsed as User
+      }
+    }
+  } catch {
+    // Ignore errors and return null
+  }
+  return null
+}
+
+function persistUser(user: User | null) {
+  try {
+    if (user) {
+      globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(user))
+    } else {
+      globalThis.localStorage?.removeItem(STORAGE_KEY)
+    }
+  } catch {
+    // Ignore storage errors (private mode, etc.)
+  }
+}
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(null)
-  const status = ref<AuthStatus>('idle')
+  const persistedUser = loadPersistedUser()
+  const user = ref<User | null>(persistedUser)
+  const status = ref<AuthStatus>(persistedUser ? 'authenticated' : 'idle')
   const error = ref<string | null>(null)
   const lastAttemptAt = ref<number | null>(null)
 
@@ -51,6 +81,8 @@ export const useAuthStore = defineStore('auth', () => {
     status.value = 'authenticated'
     error.value = null
 
+    persistUser(user.value)
+
     return user.value
   }
 
@@ -59,6 +91,7 @@ export const useAuthStore = defineStore('auth', () => {
     status.value = 'idle'
     error.value = null
     lastAttemptAt.value = null
+    persistUser(null)
   }
 
   function clearError() {

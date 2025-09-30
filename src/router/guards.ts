@@ -2,12 +2,10 @@ import type { Pinia } from 'pinia'
 import type { NavigationGuard, Router } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const PUBLIC_ROUTES = new Set(['/login'])
-
 export function registerRouterGuards(router: Router, pinia: Pinia) {
   const redirectUnauthenticated: NavigationGuard = (to) => {
     const auth = useAuthStore(pinia)
-    const requiresAuth = to.meta.requiresAuth !== false && !PUBLIC_ROUTES.has(to.path)
+    const requiresAuth = to.meta.requiresAuth !== false
 
     if (requiresAuth && !auth.isAuthenticated) {
       return {

@@ -28,10 +28,10 @@ describe('useBooksStore', () => {
     expect(store.error).toBeNull()
   })
 
-  it('adds a new book after validation', () => {
+  it('adds a new book after validation', async () => {
     const store = useBooksStore()
 
-    store.addBook({ title: 'New Book', author: 'Author', description: '', coverUrl: '' })
+    await store.addBook({ title: 'New Book', author: 'Author', description: '', coverUrl: '' })
 
     const created = store.books[0]!
     expect(created.title).toBe('New Book')
@@ -42,12 +42,12 @@ describe('useBooksStore', () => {
     const store = useBooksStore()
     await store.fetchBooks(async () => ({ books: [baseBook] }))
 
-    store.updateBook('book-1', { title: '  Updated  ', status: 'finished', coverUrl: '  https://example.com  ' })
+    await store.updateBook('book-1', { title: '  Updated  ', status: 'finished', coverUrl: '  https://example.com/image.jpg  ' })
 
     const updated = store.getById('book-1')
     expect(updated?.title).toBe('Updated')
     expect(updated?.status).toBe('finished')
-    expect(updated?.coverUrl).toBe('https://example.com')
+    expect(updated?.coverUrl).toBe('https://example.com/image.jpg')
   })
 
   it('changes book status immutably', async () => {
@@ -55,7 +55,7 @@ describe('useBooksStore', () => {
     await store.fetchBooks(async () => ({ books: [baseBook] }))
 
     const original = store.getById('book-1')
-    store.setStatus('book-1', 'reading')
+    await store.setStatus('book-1', 'reading')
     const updated = store.getById('book-1')
 
     expect(updated?.status).toBe('reading')
@@ -66,7 +66,7 @@ describe('useBooksStore', () => {
     const store = useBooksStore()
     await store.fetchBooks(async () => ({ books: [baseBook] }))
 
-    store.removeBook('book-1')
+    await store.removeBook('book-1')
 
     expect(store.books).toHaveLength(0)
   })

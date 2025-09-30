@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import ErrorBoundary from '@/components/ui/ErrorBoundary.vue'
 import { provideTheme } from '@/providers/theme'
 
 provideTheme()
@@ -7,7 +8,9 @@ provideTheme()
 
 <template>
   <div class="app-shell">
-    <RouterView />
+    <ErrorBoundary>
+      <RouterView />
+    </ErrorBoundary>
   </div>
 </template>
 

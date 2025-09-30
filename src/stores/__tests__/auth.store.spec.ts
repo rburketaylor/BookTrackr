@@ -6,10 +6,13 @@ describe('useAuthStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.useFakeTimers()
+    // Clear localStorage before each test
+    globalThis.localStorage?.clear()
   })
 
   afterEach(() => {
     vi.useRealTimers()
+    globalThis.localStorage?.clear()
   })
 
   it('authenticates with valid credentials', async () => {

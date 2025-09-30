@@ -7,6 +7,13 @@ import './style.css'
 
 const app = createApp(App)
 
+// Global error handler
+app.config.errorHandler = (err, instance, info) => {
+  console.error('Global error:', err)
+  console.error('Error info:', info)
+  console.error('Component instance:', instance)
+}
+
 const pinia = createPinia()
 
 app.use(pinia)
