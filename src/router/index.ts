@@ -23,6 +23,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/BookDetailPage.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('@/pages/NotFoundPage.vue'),
+    meta: { requiresAuth: false },
+  },
 ]
 
 const router = createRouter({
