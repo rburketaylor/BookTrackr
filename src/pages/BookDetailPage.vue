@@ -4,7 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import PrivateLayout from '@/layouts/PrivateLayout.vue'
 import StatusBanner from '@/components/ui/StatusBanner.vue'
 import { useBooks } from '@/composables/useBooks'
-import type { Book } from '@/types/domain'
+import type { Book, BookStatus } from '@/types/domain'
+
+const STATUS_LABELS: Record<BookStatus, string> = {
+  'to-read': 'To Read',
+  reading: 'Reading',
+  finished: 'Finished',
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -53,7 +59,7 @@ watch(
             <h1 class="detail__title">{{ book.title }}</h1>
             <p class="detail__author">{{ book.author }}</p>
           </div>
-          <span class="detail__badge detail__badge--status">{{ book.status }}</span>
+          <span class="detail__badge detail__badge--status">{{ STATUS_LABELS[book.status] }}</span>
         </header>
 
         <img

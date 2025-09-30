@@ -90,19 +90,19 @@ export function useBooks() {
   })
 
   function removeBook(id: string) {
-    booksStore.removeBook(id)
+    return booksStore.removeBook(id)
   }
 
   function setStatus(id: string, status: BookStatus) {
-    booksStore.setStatus(id, status)
+    return booksStore.setStatus(id, status)
   }
 
   function addBook(payload: Parameters<typeof booksStore.addBook>[0]) {
-    booksStore.addBook(payload)
+    return booksStore.addBook(payload)
   }
 
   function updateBook(id: string, payload: Parameters<typeof booksStore.updateBook>[1]) {
-    booksStore.updateBook(id, payload)
+    return booksStore.updateBook(id, payload)
   }
 
   return {

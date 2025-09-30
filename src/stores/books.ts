@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { BOOK_STATUSES, type Book, type BookStatus } from '@/types/domain'
+import { sanitizeText, sanitizeUrl, isValidImageUrl } from '@/utils/sanitize'
 
 type CreateBookPayload = Pick<Book, 'title' | 'author' | 'description' | 'coverUrl'> & {
   status?: BookStatus
@@ -25,12 +26,12 @@ function sanitizeStatus(status: BookStatus | undefined): BookStatus {
   return status
 }
 
-function sanitizeText(value: string | undefined, maxLength = 280) {
-  if (!value) {
+function sanitizeCoverUrl(value: string | undefined): string {
+  const url = sanitizeUrl(value, 240)
+  if (url && !isValidImageUrl(url)) {
     return ''
   }
-  const trimmed = value.trim()
-  return trimmed.slice(0, maxLength)
+  return url
 }
 
 function createBookId() {
@@ -44,6 +45,7 @@ function createBookId() {
 export const useBooksStore = defineStore('books', () => {
   const books = ref<Book[]>([])
   const isLoading = ref(false)
+  const isProcessing = ref(false)
   const error = ref<string | null>(null)
   const lastLoadedAt = ref<string | null>(null)
 
@@ -83,89 +85,121 @@ export const useBooksStore = defineStore('books', () => {
     }
   }
 
-  function addBook(payload: CreateBookPayload) {
-    const timestamp = nowIso()
-    const cleanTitle = sanitizeText(payload.title, 120)
-    const cleanAuthor = sanitizeText(payload.author, 120)
-    if (!cleanTitle || !cleanAuthor) {
-      throw new Error('Title and author are required.')
-    }
+  async function addBook(payload: CreateBookPayload) {
+    isProcessing.value = true
+    try {
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 300))
 
-    const newBook: Book = {
-      id: createBookId(),
-      title: cleanTitle,
-      author: cleanAuthor,
-      description: sanitizeText(payload.description, 560) || undefined,
-      coverUrl: sanitizeText(payload.coverUrl, 240) || undefined,
-      status: sanitizeStatus(payload.status),
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    }
+      const timestamp = nowIso()
+      const cleanTitle = sanitizeText(payload.title, 120)
+      const cleanAuthor = sanitizeText(payload.author, 120)
+      if (!cleanTitle || !cleanAuthor) {
+        throw new Error('Title and author are required.')
+      }
 
-    books.value = [newBook, ...books.value]
+      const newBook: Book = {
+        id: createBookId(),
+        title: cleanTitle,
+        author: cleanAuthor,
+        description: sanitizeText(payload.description, 560) || undefined,
+        coverUrl: sanitizeCoverUrl(payload.coverUrl) || undefined,
+        status: sanitizeStatus(payload.status),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+
+      books.value = [newBook, ...books.value]
+    } finally {
+      isProcessing.value = false
+    }
   }
 
-  function updateBook(id: string, changes: UpdateBookPayload) {
-    const index = books.value.findIndex((book) => book.id === id)
-    if (index === -1) {
-      throw new Error('Book not found.')
+  async function updateBook(id: string, changes: UpdateBookPayload) {
+    isProcessing.value = true
+    try {
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      const index = books.value.findIndex((book) => book.id === id)
+      if (index === -1) {
+        throw new Error('Book not found.')
+      }
+
+      const original = books.value[index]!
+      const hasTitleChange = changes.title !== undefined
+      const nextTitle = hasTitleChange
+        ? sanitizeText(changes.title, 120) || original.title
+        : original.title
+
+      const hasAuthorChange = changes.author !== undefined
+      const nextAuthor = hasAuthorChange
+        ? sanitizeText(changes.author, 120) || original.author
+        : original.author
+
+      const hasDescriptionChange = changes.description !== undefined
+      const nextDescription = hasDescriptionChange
+        ? sanitizeText(changes.description, 560)
+        : original.description ?? ''
+
+      const hasCoverChange = changes.coverUrl !== undefined
+      const nextCover = hasCoverChange
+        ? sanitizeCoverUrl(changes.coverUrl)
+        : original.coverUrl ?? ''
+
+      const updated: Book = {
+        ...original,
+        title: nextTitle,
+        author: nextAuthor,
+        description: nextDescription ? nextDescription : undefined,
+        coverUrl: nextCover ? nextCover : undefined,
+        status: changes.status !== undefined ? sanitizeStatus(changes.status) : original.status,
+        updatedAt: nowIso(),
+      }
+
+      books.value.splice(index, 1, updated)
+    } finally {
+      isProcessing.value = false
     }
-
-    const original = books.value[index]!
-    const hasTitleChange = changes.title !== undefined
-    const nextTitle = hasTitleChange
-      ? sanitizeText(changes.title, 120) || original.title
-      : original.title
-
-    const hasAuthorChange = changes.author !== undefined
-    const nextAuthor = hasAuthorChange
-      ? sanitizeText(changes.author, 120) || original.author
-      : original.author
-
-    const hasDescriptionChange = changes.description !== undefined
-    const nextDescription = hasDescriptionChange
-      ? sanitizeText(changes.description, 560)
-      : original.description ?? ''
-
-    const hasCoverChange = changes.coverUrl !== undefined
-    const nextCover = hasCoverChange
-      ? sanitizeText(changes.coverUrl, 240)
-      : original.coverUrl ?? ''
-
-    const updated: Book = {
-      ...original,
-      title: nextTitle,
-      author: nextAuthor,
-      description: nextDescription ? nextDescription : undefined,
-      coverUrl: nextCover ? nextCover : undefined,
-      status: changes.status !== undefined ? sanitizeStatus(changes.status) : original.status,
-      updatedAt: nowIso(),
-    }
-
-    books.value.splice(index, 1, updated)
   }
 
-  function setStatus(id: string, nextStatus: BookStatus) {
-    const index = books.value.findIndex((book) => book.id === id)
-    if (index === -1) {
-      throw new Error('Book not found.')
-    }
+  async function setStatus(id: string, nextStatus: BookStatus) {
+    isProcessing.value = true
+    try {
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 200))
 
-    const original = books.value[index]!
-    const targetStatus = sanitizeStatus(nextStatus)
-    if (original.status === targetStatus) {
-      return
-    }
+      const index = books.value.findIndex((book) => book.id === id)
+      if (index === -1) {
+        throw new Error('Book not found.')
+      }
 
-    books.value.splice(index, 1, {
-      ...original,
-      status: targetStatus,
-      updatedAt: nowIso(),
-    })
+      const original = books.value[index]!
+      const targetStatus = sanitizeStatus(nextStatus)
+      if (original.status === targetStatus) {
+        return
+      }
+
+      books.value.splice(index, 1, {
+        ...original,
+        status: targetStatus,
+        updatedAt: nowIso(),
+      })
+    } finally {
+      isProcessing.value = false
+    }
   }
 
-  function removeBook(id: string) {
-    books.value = books.value.filter((book) => book.id !== id)
+  async function removeBook(id: string) {
+    isProcessing.value = true
+    try {
+      // Simulate network delay
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      books.value = books.value.filter((book) => book.id !== id)
+    } finally {
+      isProcessing.value = false
+    }
   }
 
   function getById(id: string) {
@@ -181,6 +215,7 @@ export const useBooksStore = defineStore('books', () => {
   return {
     books,
     isLoading,
+    isProcessing,
     error,
     totalCount,
     statusCounts,

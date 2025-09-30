@@ -5,6 +5,7 @@ import PrivateLayout from '@/layouts/PrivateLayout.vue'
 import BookCard from '@/components/books/BookCard.vue'
 import BookForm from '@/components/books/BookForm.vue'
 import StatusBanner from '@/components/ui/StatusBanner.vue'
+import LiveRegion from '@/components/ui/LiveRegion.vue'
 import { useBooks } from '@/composables/useBooks'
 import { useTheme } from '@/composables/useTheme'
 import { useAuthStore } from '@/stores/auth'
@@ -30,6 +31,7 @@ const activeFilter = ref<'all' | BookStatus>('all')
 const isFormOpen = ref(false)
 const editingId = ref<string | null>(null)
 const { theme, toggleTheme } = useTheme()
+const announcement = ref('')
 
 const themeButtonLabel = computed(() => (theme.value === 'light' ? 'Dark Mode' : 'Light Mode'))
 
@@ -69,19 +71,24 @@ function closeForm() {
   isFormOpen.value = false
 }
 
-function handleStatusChange(payload: { id: string; status: BookStatus }) {
-  setStatus(payload.id, payload.status)
+async function handleStatusChange(payload: { id: string; status: BookStatus }) {
+  await setStatus(payload.id, payload.status)
+  announcement.value = 'Book status updated'
 }
 
-function handleDelete(id: string) {
-  removeBook(id)
+async function handleDelete(id: string) {
+  const book = books.value.find(b => b.id === id)
+  await removeBook(id)
+  announcement.value = book ? `${book.title} deleted` : 'Book deleted'
 }
 
-function handleSubmit(payload: { title: string; author: string; description: string; coverUrl: string; status: BookStatus }) {
+async function handleSubmit(payload: { title: string; author: string; description: string; coverUrl: string; status: BookStatus }) {
   if (editingId.value) {
-    updateBook(editingId.value, payload)
+    await updateBook(editingId.value, payload)
+    announcement.value = `${payload.title} updated`
   } else {
-    addBook(payload)
+    await addBook(payload)
+    announcement.value = `${payload.title} added to library`
   }
   closeForm()
 }
@@ -135,6 +142,8 @@ function handleSubmit(payload: { title: string; author: string; description: str
         />
       </div>
     </section>
+
+    <LiveRegion :message="announcement" />
 
     <Teleport to="body">
       <transition name="fade">

@@ -169,14 +169,6 @@ function emitEdit() {
   color: var(--color-success);
 }
 
-.btn--danger {
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.btn--danger:hover {
-  box-shadow: 0 10px 25px -20px rgba(239, 68, 68, 0.7);
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px;
